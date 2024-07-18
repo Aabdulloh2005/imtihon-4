@@ -4,6 +4,8 @@ sealed class TadbirEvent {}
 
 final class FetchTadbirEvent extends TadbirEvent {}
 
+final class FetchMyTadbirEvent extends TadbirEvent {}
+
 final class AddTadbirEvent extends TadbirEvent {
   final Event event;
 

@@ -13,6 +13,10 @@ class TadbirRepository {
     yield* tadbirServiceFirebase.fetchEvents();
   }
 
+  Stream<QuerySnapshot> fetchMyEvents() async* {
+    yield* tadbirServiceFirebase.fetchMyEvents();
+  }
+
   void addEvent(Event event) async {
     await tadbirServiceFirebase.addEvent(event);
   }

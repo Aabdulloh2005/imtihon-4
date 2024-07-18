@@ -6,6 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tadbiro_app/bloc/tadbir_bloc/tadbir_bloc.dart';
 import 'package:tadbiro_app/data/models/event.dart';
+import 'package:tadbiro_app/services/location_service.dart';
+import 'package:tadbiro_app/services/user_auth_service.dart';
 import 'package:tadbiro_app/ui/widgets/custom_textfornfield.dart';
 import 'package:tadbiro_app/ui/widgets/yandex_map_widget.dart';
 import 'package:tadbiro_app/utils/app_color.dart';
@@ -24,6 +26,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
+  final _userService = UserAuthService();
   Timestamp _timestamp = Timestamp.now();
   DateTime dateTime = DateTime.now();
   Point? currentPoint;
@@ -39,6 +42,30 @@ class _AddEventScreenState extends State<AddEventScreen> {
     final snapshot = await uploadTask.whenComplete(() {});
     final downloadUrl = await snapshot.ref.getDownloadURL();
     return downloadUrl;
+  }
+
+  void _addEvent() async {
+    final locationName = await LocationService.determinePositionName(
+        GeoPoint(currentPoint!.latitude, currentPoint!.longitude));
+    print(locationName);
+    context.read<TadbirBloc>().add(
+          AddTadbirEvent(
+            event: Event(
+              creatorId: FirebaseAuth.instance.currentUser!.uid,
+              creatorName: await _userService.getUserName(),
+              creatorImageUrl: await _userService.getUserPhoto(),
+              name: _nameController.text,
+              startTime: _timestamp,
+              geoPoint:
+                  GeoPoint(currentPoint!.latitude, currentPoint!.longitude),
+              description: _detailsController.text,
+              imageUrl: _imageUrl!,
+              locationName: locationName,
+              personCount: 0,
+            ),
+          ),
+        );
+    Navigator.of(context).pop();
   }
 
   @override
@@ -79,7 +106,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
                   );
                   if (pickedDate != null) {
                     dateTime = pickedDate;
-                    // _timestamp = Timestamp.fromDate(pickedDate);
                     _dateController.text =
                         pickedDate.toLocal().toString().split(' ')[0];
                   }
@@ -116,7 +142,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
                 icon: Icons.info,
                 maxLines: 2,
               ),
-              // const Gap(15),
               const Text("Rasm yoki video yuklash"),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -182,23 +207,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             FloatingActionButton(
-              onPressed: () {
-                context.read<TadbirBloc>().add(
-                      AddTadbirEvent(
-                        event: Event(
-                          creatorId: FirebaseAuth.instance.currentUser!.uid,
-                          name: _nameController.text,
-                          time: _timestamp,
-                          geoPoint: GeoPoint(
-                              currentPoint!.latitude, currentPoint!.longitude),
-                          description: _detailsController.text,
-                          imageUrl: _imageUrl ?? "",
-                        ),
-                      ),
-                    );
-
-                Navigator.of(context).pop();
-              },
+              onPressed: _addEvent,
               child: const Text("Qo'shish"),
             )
           ],

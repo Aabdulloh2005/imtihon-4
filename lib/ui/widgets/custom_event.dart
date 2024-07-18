@@ -1,49 +1,23 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
-import 'package:tadbiro_app/services/location_service.dart';
+import 'package:tadbiro_app/data/models/event.dart';
 
-class CustomEvent extends StatefulWidget {
-  String image;
-  String title;
-  DateTime time;
-  GeoPoint location;
+class CustomEvent extends StatelessWidget {
+  Event event;
   Function()? onPressed;
   CustomEvent({
     super.key,
-    required this.image,
-    required this.location,
     required this.onPressed,
-    required this.time,
-    required this.title,
+    required this.event,
   });
-
-  @override
-  State<CustomEvent> createState() => _CustomEventState();
-}
-
-class _CustomEventState extends State<CustomEvent> {
-  String address = '';
-  @override
-  void initState() {
-    super.initState();
-
-    Future.delayed(
-      Duration.zero,
-      () async {
-        address = await LocationService.determinePositionName(widget.location);
-      },
-    );
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
     String formattedDate = DateFormat(
       'HH:mm dd MMMM, yyyy',
-    ).format(widget.time);
+    ).format(event.startTime.toDate());
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -65,10 +39,10 @@ class _CustomEventState extends State<CustomEvent> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  child: !widget.image.startsWith('https')
+                  child: !event.imageUrl.startsWith('https')
                       ? const Icon(Icons.image)
                       : Image.network(
-                          widget.image,
+                          event.imageUrl,
                           fit: BoxFit.cover,
                         ),
                 ),
@@ -79,7 +53,7 @@ class _CustomEventState extends State<CustomEvent> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.title,
+                        event.name,
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
@@ -100,11 +74,16 @@ class _CustomEventState extends State<CustomEvent> {
                             Icons.location_on_outlined,
                             size: 20,
                           ),
-                          Text(
-                            address,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w600,
+                          SizedBox(
+                            width: 150,
+                            child: Text(
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              event.locationName,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           )
                         ],
@@ -119,7 +98,7 @@ class _CustomEventState extends State<CustomEvent> {
             bottom: 5,
             right: 5,
             child: IconButton(
-              onPressed: widget.onPressed,
+              onPressed: onPressed,
               icon: const Icon(CupertinoIcons.heart),
             ),
           ),

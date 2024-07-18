@@ -2,10 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:tadbiro_app/bloc/theme_bloc/theme_cubit.dart';
-import 'package:tadbiro_app/ui/screens/all_events_screen.dart';
+import 'package:tadbiro_app/bloc/tadbir_bloc/tadbir_bloc.dart';
+import 'package:tadbiro_app/ui/screens/event_details_screen.dart';
 import 'package:tadbiro_app/ui/screens/notification_screen.dart';
-import 'package:tadbiro_app/ui/screens/profile_screen.dart';
+import 'package:tadbiro_app/ui/widgets/custom_drawer.dart';
+import 'package:tadbiro_app/ui/widgets/custom_event.dart';
 import 'package:tadbiro_app/utils/app_color.dart';
 
 class Homepage extends StatelessWidget {
@@ -120,132 +121,58 @@ class Homepage extends StatelessWidget {
                 height: 2,
               ),
             ),
-            Stack(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade800,
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.grey, width: 3),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        height: 90,
-                        width: 120,
-                        clipBehavior: Clip.hardEdge,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          image: const DecorationImage(
-                            image: AssetImage(
-                              'assets/images/smoke.png',
-                            ),
+            Expanded(
+              child: BlocBuilder<TadbirBloc, TadbirState>(
+                bloc: context.read<TadbirBloc>()..add(FetchTadbirEvent()),
+                builder: (context, state) {
+                  if (state is TadbirInitial) {
+                    return const Center(
+                      child: Text("Initial"),
+                    );
+                  }
+
+                  if (state is TadbirLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (state is TadbirError) {
+                    return Center(
+                      child: Text(state.errorMessage),
+                    );
+                  } else {
+                    final data = (state as TadbirLoaded);
+                    print('Ishlash kere');
+                    print(data.events.length);
+                    return ListView.builder(
+                      itemCount: data.events.length,
+                      itemBuilder: (context, index) {
+                        final event = data.events[index];
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              CupertinoPageRoute(
+                                builder: (context) => EventDetailsScreen(),
+                              ),
+                            );
+                          },
+                          child: CustomEvent(
+                            onPressed: () {},
+                            event: event,
                           ),
-                        ),
-                      ),
-                      const Gap(10),
-                      const Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Flutter Global Hakaton 2024",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
-                            ),
-                            Gap(10),
-                            Text(
-                              "10:00 06 Sentabr,2024",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Gap(5),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.location_on_outlined,
-                                  size: 20,
-                                ),
-                                Text(
-                                  "Yoshlar ijod saroyi",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                )
-                              ],
-                            )
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                const Positioned(
-                  bottom: 20,
-                  right: 20,
-                  child: Icon(CupertinoIcons.heart),
-                )
-              ],
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ),
           ],
         ),
       ),
-      drawer: Drawer(
-        child: Column(
-          children: [
-            const DrawerHeader(
-              child: SizedBox(),
-            ),
-            BlocBuilder<ThemeCubit, bool>(
-              builder: (context, state) {
-                return SwitchListTile(
-                  title: const Text("Mode"),
-                  value: state,
-                  onChanged: (value) {
-                    context.read<ThemeCubit>().changeTheme();
-                  },
-                );
-              },
-            ),
-            ListTile(
-              onTap: () {
-                Navigator.of(context).push(
-                  CupertinoPageRoute(
-                    builder: (context) => const AllEventsScreen(),
-                  ),
-                );
-              },
-              leading: const Icon(CupertinoIcons.ticket),
-              title: const Text("Mening tadbirlarim"),
-              trailing: const Icon(Icons.keyboard_arrow_right),
-            ),
-            ListTile(
-              onTap: () {
-                Navigator.of(context).push(
-                  CupertinoPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-              leading: const Icon(CupertinoIcons.person),
-              title: const Text("Profil malumotlari"),
-              trailing: const Icon(Icons.keyboard_arrow_right),
-            ),
-            const ListTile(
-              leading: Icon(Icons.translate),
-              title: Text("Tillarni o'zgartirish"),
-              trailing: Icon(Icons.keyboard_arrow_right),
-            ),
-          ],
-        ),
-      ),
+      drawer: const CustomDrawer(),
     );
   }
 }

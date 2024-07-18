@@ -11,7 +11,7 @@ class TadbirBloc extends Bloc<TadbirEvent, TadbirState> {
       : _tadbirRepository = tadbirrepository,
         super(TadbirInitial()) {
     on<FetchTadbirEvent>(_fetchTadbir);
-
+    on<FetchMyTadbirEvent>(_fetchMyEvents);
     on<AddTadbirEvent>(_addTadbir);
   }
 
@@ -43,6 +43,28 @@ class TadbirBloc extends Bloc<TadbirEvent, TadbirState> {
       _tadbirRepository.addEvent(event.event);
     } catch (e) {
       emit(TadbirError(errorMessage: "Error qo'shishda  -  $e"));
+    }
+  }
+
+  void _fetchMyEvents(
+      FetchMyTadbirEvent event, Emitter<TadbirState> emit) async {
+    emit(TadbirLoading());
+
+    try {
+      await emit.forEach(
+        _tadbirRepository.fetchMyEvents(),
+        onData: (data) {
+          print("tushti");
+          final event = data.docs;
+          List<Event> list = [];
+          for (var i in event) {
+            list.add(Event.fromQuerySnapshot(i));
+          }
+          return TadbirLoaded(events: list);
+        },
+      );
+    } catch (e) {
+      emit(TadbirError(errorMessage: "Error fetch qilishda:   $e"));
     }
   }
 }

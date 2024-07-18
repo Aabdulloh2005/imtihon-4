@@ -22,18 +22,17 @@ class UserAuthService {
       email: email,
       password: password,
     );
-    
+
     User? user = userCredential.user;
     String? userToken = await FirebasePushNotificationService.getToken();
 
     if (user != null) {
       await _userfirebase.collection("users").doc(user.uid).set(
         {
-          // "token": userToken,
-          "token": "qqq",
+          "token": userToken,
           "email": user.email,
           "userName": username,
-          "photoUrl": "",
+          "imageUrl": "",
         },
       );
     }
@@ -72,7 +71,7 @@ class UserAuthService {
     await _userfirebase.collection('users').doc(id).update(
       {
         "userName": name,
-        if (photoUrl != null) "photoUrl": photoUrl,
+        if (photoUrl != null) "imageUrl": photoUrl,
       },
     );
   }
@@ -88,5 +87,19 @@ class UserAuthService {
       print('Error uploading profile image: $e');
       return null;
     }
+  }
+
+  Future<String> getUserName() async {
+    print(_userAuthentication.currentUser!.uid);
+    final data = await getUserInfo(_userAuthentication.currentUser!.uid);
+    print(data['userName']);
+    return data['userName'];
+  }
+
+  Future<String> getUserPhoto() async {
+    final data = await getUserInfo(_userAuthentication.currentUser!.uid);
+    print(data['imageUrl']);
+
+    return data['imageUrl'];
   }
 }

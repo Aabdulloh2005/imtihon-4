@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:tadbiro_app/ui/screens/add_event_screen.dart';
+import 'package:tadbiro_app/ui/screens/events/add_event_screen.dart';
 import 'package:tadbiro_app/ui/screens/events/my_events.dart';
 import 'package:tadbiro_app/utils/app_color.dart';
 

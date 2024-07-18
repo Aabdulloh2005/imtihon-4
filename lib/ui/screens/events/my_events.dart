@@ -11,7 +11,7 @@ class MyEvents extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: BlocBuilder<TadbirBloc, TadbirState>(
-        bloc: context.read<TadbirBloc>()..add(FetchTadbirEvent()),
+        bloc: context.read<TadbirBloc>()..add(FetchMyTadbirEvent()),
         builder: (context, state) {
           if (state is TadbirInitial) {
             return const Center(
@@ -31,16 +31,16 @@ class MyEvents extends StatelessWidget {
             );
           } else {
             final data = (state as TadbirLoaded);
+            print('Ishlash kere');
+            print(data.events.length);
             return ListView.builder(
               itemCount: data.events.length,
               itemBuilder: (context, index) {
                 final event = data.events[index];
+
                 return CustomEvent(
-                  image: event.imageUrl,
-                  location: event.geoPoint,
                   onPressed: () {},
-                  time: event.time.toDate(),
-                  title: event.name,
+                  event: event,
                 );
               },
             );
