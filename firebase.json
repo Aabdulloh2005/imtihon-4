@@ -1,0 +1,23 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "lesson69",
+                    "appId": "1:972832642130:android:1346394776efe030a6fb8b",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "lesson69",
+                    "configurations": {
+                        "android": "1:972832642130:android:1346394776efe030a6fb8b",
+                        "ios": "1:972832642130:ios:8a2720c5d754d235a6fb8b",
+                        "web": "1:972832642130:web:bd528c3dc02ae88aa6fb8b"
+                    }
+                }
+            }
+        }
+    }
+}
