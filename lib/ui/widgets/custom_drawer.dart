@@ -15,7 +15,17 @@ class CustomDrawer extends StatelessWidget {
       child: Column(
         children: [
           const DrawerHeader(
-            child: SizedBox(),
+            margin: EdgeInsets.zero,
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: ListTile(
+              contentPadding: EdgeInsets.only(left: 0, right: 0, top: 40),
+              leading: CircleAvatar(
+                radius: 40,
+                backgroundImage: AssetImage("assets/images/back.png"),
+              ),
+              title: Text("Abdulloh Ganiev"),
+              subtitle: Text("ganievabdulloh2005@gmail.com"),
+            ),
           ),
           BlocBuilder<ThemeCubit, bool>(
             builder: (context, state) {

@@ -28,4 +28,12 @@ class TadbirServiceFirebase {
       'personCount': event.personCount,
     });
   }
+
+  Future<void> updateEvent(String id, int count) async {
+    await firebaseservice.doc(id).update(
+      {
+        'personCount': count,
+      },
+    );
+  }
 }

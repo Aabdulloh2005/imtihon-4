@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tadbiro_app/bloc/tadbir_bloc/tadbir_bloc.dart';
+import 'package:provider/provider.dart';
+import 'package:tadbiro_app/controllers/tadbir_controller.dart';
+import 'package:tadbiro_app/data/models/event.dart';
 import 'package:tadbiro_app/ui/widgets/custom_event.dart';
 
 class MyEvents extends StatelessWidget {
@@ -10,41 +11,38 @@ class MyEvents extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      child: BlocBuilder<TadbirBloc, TadbirState>(
-        bloc: context.read<TadbirBloc>()..add(FetchMyTadbirEvent()),
-        builder: (context, state) {
-          if (state is TadbirInitial) {
-            return const Center(
-              child: Text("Initial"),
-            );
-          }
-
-          if (state is TadbirLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (state is TadbirError) {
-            return Center(
-              child: Text(state.errorMessage),
-            );
-          } else {
-            final data = (state as TadbirLoaded);
-            print('Ishlash kere');
-            print(data.events.length);
-            return ListView.builder(
-              itemCount: data.events.length,
-              itemBuilder: (context, index) {
-                final event = data.events[index];
-
-                return CustomEvent(
-                  onPressed: () {},
-                  event: event,
+      child: Consumer<TadbirController>(
+        builder: (context, controller, child) {
+          return StreamBuilder(
+            stream: controller.fetchMyEvents(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
                 );
-              },
-            );
-          }
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text("Xatolik yuz berdi: ${snapshot.error}"),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const Center(
+                  child: Text("Tadbirlar yo'q"),
+                );
+              }
+
+              List<Event> events = snapshot.data!.docs.map((doc) {
+                return Event.fromQuerySnapshot(doc);
+              }).toList();
+
+              return ListView.builder(
+                itemCount: events.length,
+                itemBuilder: (context, index) {
+                  final event = events[index];
+                  return CustomEvent(onPressed: () {}, event: event);
+                },
+              );
+            },
+          );
         },
       ),
     );

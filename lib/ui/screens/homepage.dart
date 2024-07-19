@@ -1,9 +1,12 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:tadbiro_app/bloc/tadbir_bloc/tadbir_bloc.dart';
-import 'package:tadbiro_app/ui/screens/event_details_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:tadbiro_app/controllers/tadbir_controller.dart';
+import 'package:tadbiro_app/data/models/event.dart';
+import 'package:tadbiro_app/ui/screens/event_details.dart/event_details_screen.dart';
 import 'package:tadbiro_app/ui/screens/notification_screen.dart';
 import 'package:tadbiro_app/ui/widgets/custom_drawer.dart';
 import 'package:tadbiro_app/ui/widgets/custom_event.dart';
@@ -21,9 +24,11 @@ class Homepage extends StatelessWidget {
         actions: [
           IconButton(
               onPressed: () {
-                Navigator.of(context).push(CupertinoPageRoute(
-                  builder: (context) => const NotificationScreen(),
-                ));
+                Navigator.of(context).push(
+                  CupertinoPageRoute(
+                    builder: (context) => const NotificationScreen(),
+                  ),
+                );
               },
               icon: const Icon(Icons.notifications))
         ],
@@ -58,60 +63,66 @@ class Homepage extends StatelessWidget {
                 height: 2,
               ),
             ),
-            Container(
-              padding: const EdgeInsets.all(10),
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                image: const DecorationImage(
-                  fit: BoxFit.fill,
-                  image: AssetImage('assets/images/back.png'),
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.all(5),
-                        child: const Column(
+            CarouselSlider.builder(
+                itemCount: 3,
+                itemBuilder: (context, index, realIndex) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.all(10),
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      image: const DecorationImage(
+                        fit: BoxFit.fill,
+                        image: AssetImage('assets/images/back.png'),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              "12",
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.all(5),
+                              child: const Column(
+                                children: [
+                                  Text(
+                                    "12",
+                                  ),
+                                  Text(
+                                    'May',
+                                  ),
+                                ],
+                              ),
                             ),
-                            Text(
-                              'May',
+                            IconButton(
+                              onPressed: () {},
+                              icon: const Icon(
+                                CupertinoIcons.heart_circle,
+                                size: 35,
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          CupertinoIcons.heart_circle,
-                          size: 35,
+                        const Text(
+                          'Cillum dolore nostrud ullamco irure do nostrud magna culpa consectetur.',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const Text(
-                    'Cillum dolore nostrud ullamco irure do nostrud magna culpa consectetur.',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  );
+                },
+                options: CarouselOptions(viewportFraction: 0.9)),
             const Gap(10),
             const Text(
               "Barcha tadbirlar",
@@ -122,50 +133,50 @@ class Homepage extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: BlocBuilder<TadbirBloc, TadbirState>(
-                bloc: context.read<TadbirBloc>()..add(FetchTadbirEvent()),
-                builder: (context, state) {
-                  if (state is TadbirInitial) {
-                    return const Center(
-                      child: Text("Initial"),
-                    );
-                  }
-
-                  if (state is TadbirLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-
-                  if (state is TadbirError) {
-                    return Center(
-                      child: Text(state.errorMessage),
-                    );
-                  } else {
-                    final data = (state as TadbirLoaded);
-                    print('Ishlash kere');
-                    print(data.events.length);
-                    return ListView.builder(
-                      itemCount: data.events.length,
-                      itemBuilder: (context, index) {
-                        final event = data.events[index];
-
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              CupertinoPageRoute(
-                                builder: (context) => EventDetailsScreen(),
-                              ),
-                            );
-                          },
-                          child: CustomEvent(
-                            onPressed: () {},
-                            event: event,
-                          ),
+              child: Consumer<TadbirController>(
+                builder: (context, controller, child) {
+                  return StreamBuilder(
+                    stream: controller.fetchEvents(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
                         );
-                      },
-                    );
-                  }
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text("Xatolik yuz berdi: ${snapshot.error}"),
+                        );
+                      } else if (!snapshot.hasData ||
+                          snapshot.data!.docs.isEmpty) {
+                        return const Center(
+                          child: Text("Tadbirlar yo'q"),
+                        );
+                      }
+
+                      List<Event> events = snapshot.data!.docs.map((doc) {
+                        return Event.fromQuerySnapshot(doc);
+                      }).toList();
+
+                      return ListView.builder(
+                        itemCount: events.length,
+                        itemBuilder: (context, index) {
+                          final event = events[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                CupertinoPageRoute(
+                                  builder: (context) => EventDetailsScreen(
+                                    event: event,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: CustomEvent(onPressed: () {}, event: event),
+                          );
+                        },
+                      );
+                    },
+                  );
                 },
               ),
             ),

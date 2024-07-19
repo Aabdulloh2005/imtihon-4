@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:tadbiro_app/data/models/event.dart';
 import 'package:tadbiro_app/services/tadbir_service_firebase.dart';
 
-class TadbirRepository {
+class TadbirController extends ChangeNotifier {
   final TadbirServiceFirebase tadbirServiceFirebase;
 
-  TadbirRepository({
+  TadbirController({
+    
     required this.tadbirServiceFirebase,
   });
 
@@ -19,5 +21,9 @@ class TadbirRepository {
 
   void addEvent(Event event) async {
     await tadbirServiceFirebase.addEvent(event);
+  }
+
+  void updateEvent(String creatorId, int count) async {
+    await tadbirServiceFirebase.updateEvent(creatorId, count);
   }
 }

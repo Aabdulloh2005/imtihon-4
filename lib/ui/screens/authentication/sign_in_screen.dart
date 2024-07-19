@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:tadbiro_app/bloc/controllers/user_controller.dart';
+import 'package:tadbiro_app/controllers/user_controller.dart';
 import 'package:tadbiro_app/ui/screens/authentication/register_screen.dart';
 import 'package:tadbiro_app/ui/widgets/custom_textfornfield.dart';
 import 'package:tadbiro_app/utils/app_color.dart';

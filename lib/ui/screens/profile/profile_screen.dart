@@ -15,26 +15,35 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final _currentUser = FirebaseAuth.instance.currentUser;
   final _authService = UserAuthService();
   String username = '';
   File? _image;
   String? photoUrl;
+  User? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _currentUser = FirebaseAuth.instance.currentUser;
     _loadCurrentUser();
   }
 
   Future<void> _loadCurrentUser() async {
+    await Future.delayed(Duration(seconds: 1));
     if (_currentUser != null) {
-      DocumentSnapshot user = await _authService.getUserInfo(_currentUser.uid);
-      setState(() {
-        username = user['userName'] ?? '';
-        photoUrl = user['imageurl'];
-      });
-      setState(() {});
+      try {
+        DocumentSnapshot user =
+            await _authService.getUserInfo(_currentUser!.uid);
+        // if (mounted) {
+        setState(() {
+          username = user['userName'] ?? '';
+          photoUrl = user['imageurl'];
+        });
+        // }
+      } catch (e) {
+        // Handle error if necessary
+        print('Error loading user information: $e');
+      }
     }
   }
 
@@ -45,15 +54,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _image = File(pickedFile.path);
       });
-      String? downloadUrl =
-          await _authService.uploadProfileImage(_image!, _currentUser!.uid);
-      if (downloadUrl != null) {
-        setState(() {
-          photoUrl = downloadUrl;
-        });
 
-        await _authService.updateProfile(_currentUser.uid, username,
-            photoUrl: photoUrl);
+      try {
+        String? downloadUrl =
+            await _authService.uploadProfileImage(_image!, _currentUser!.uid);
+        if (downloadUrl != null) {
+          setState(() {
+            photoUrl = downloadUrl;
+          });
+
+          await _authService.updateProfile(_currentUser!.uid, username,
+              photoUrl: photoUrl);
+        }
+      } catch (e) {
+        // Handle error if necessary
+        print('Error uploading profile image: $e');
       }
     }
   }
@@ -61,15 +76,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _editUsername() async {
     final TextEditingController _controller =
         TextEditingController(text: username);
+
     await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Edit Username'),
           content: TextField(
-            onChanged: (value) {
-              username = value;
-            },
             controller: _controller,
             decoration: const InputDecoration(hintText: "Enter new username"),
           ),
@@ -86,10 +99,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   setState(() {
                     username = _controller.text;
                   });
-                  await _authService.updateProfile(
-                    _currentUser!.uid,
-                    username,
-                  );
+                  try {
+                    await _authService.updateProfile(
+                        _currentUser!.uid, username);
+                  } catch (e) {
+                    // Handle error if necessary
+                    print('Error updating username: $e');
+                  }
                 }
                 Navigator.of(context).pop();
               },

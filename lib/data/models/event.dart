@@ -14,7 +14,7 @@ class Event {
   final int personCount;
 
   Event({
-     this.id,
+    this.id,
     required this.creatorId,
     required this.creatorName,
     required this.creatorImageUrl,

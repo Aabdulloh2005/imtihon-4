@@ -4,7 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tadbiro_app/bloc/tadbir_bloc/tadbir_bloc.dart';
+import 'package:tadbiro_app/controllers/tadbir_controller.dart';
 import 'package:tadbiro_app/data/models/event.dart';
 import 'package:tadbiro_app/services/location_service.dart';
 import 'package:tadbiro_app/services/user_auth_service.dart';
@@ -48,21 +48,18 @@ class _AddEventScreenState extends State<AddEventScreen> {
     final locationName = await LocationService.determinePositionName(
         GeoPoint(currentPoint!.latitude, currentPoint!.longitude));
     print(locationName);
-    context.read<TadbirBloc>().add(
-          AddTadbirEvent(
-            event: Event(
-              creatorId: FirebaseAuth.instance.currentUser!.uid,
-              creatorName: await _userService.getUserName(),
-              creatorImageUrl: await _userService.getUserPhoto(),
-              name: _nameController.text,
-              startTime: _timestamp,
-              geoPoint:
-                  GeoPoint(currentPoint!.latitude, currentPoint!.longitude),
-              description: _detailsController.text,
-              imageUrl: _imageUrl!,
-              locationName: locationName,
-              personCount: 0,
-            ),
+    context.read<TadbirController>().addEvent(
+          Event(
+            creatorId: FirebaseAuth.instance.currentUser!.uid,
+            creatorName: await _userService.getUserName(),
+            creatorImageUrl: await _userService.getUserPhoto(),
+            name: _nameController.text,
+            startTime: _timestamp,
+            geoPoint: GeoPoint(currentPoint!.latitude, currentPoint!.longitude),
+            description: _detailsController.text,
+            imageUrl: _imageUrl!,
+            locationName: locationName,
+            personCount: 0,
           ),
         );
     Navigator.of(context).pop();
