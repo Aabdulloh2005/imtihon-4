@@ -47,6 +47,8 @@ class _RegisterToEventScreenState extends State<RegisterToEventScreen> {
           pickedTime.hour,
           pickedTime.minute,
         );
+        print('----------------------------------');
+        print(selectedDateTime);
         await LocalNotificationsServices.scheduleNotification(
             1, "Notificaation", name, selectedDateTime);
         Navigator.of(context).pushReplacement(

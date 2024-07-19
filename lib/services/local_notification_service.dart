@@ -6,14 +6,13 @@ import 'package:timezone/data/latest_all.dart' as tzl;
 import 'package:timezone/timezone.dart' as tz;
 
 class LocalNotificationsServices {
-  static final _localnotification = FlutterLocalNotificationsPlugin();
+  static final _localNotification = FlutterLocalNotificationsPlugin();
 
   static bool notificationEnabled = false;
 
   static Future<void> requestPermission() async {
     if (Platform.isIOS || Platform.isMacOS) {
-      /// agar [IOS] bo'lsa shu orqali ruxsat so'raymiz
-      notificationEnabled = await _localnotification
+      notificationEnabled = await _localNotification
               .resolvePlatformSpecificImplementation<
                   IOSFlutterLocalNotificationsPlugin>()
               ?.requestPermissions(
@@ -23,7 +22,7 @@ class LocalNotificationsServices {
               ) ??
           false;
 
-      await _localnotification
+      await _localNotification
           .resolvePlatformSpecificImplementation<
               MacOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(
@@ -32,32 +31,33 @@ class LocalNotificationsServices {
             sound: true,
           );
     } else if (Platform.isAndroid) {
-      /// agar [Android] bo'lsa bundan foydalanamiz
       final androidImplementation =
-          _localnotification.resolvePlatformSpecificImplementation<
+          _localNotification.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
 
-      // bu yerda darhol xabarnomaga ruhsat so'raymiz.
       final bool? grantedNotificationPermission =
           await androidImplementation?.requestExactAlarmsPermission();
 
-      // bu yerda rejali xabarnomaga ruxsat so'raymiz
       final bool? grantedScheduleNotificationPermission =
           await androidImplementation?.requestExactAlarmsPermission();
 
-      //! kamchilik:
-      //? ikkalasi uchunham bitta o'zgaruvchi ishlatilgan!
       notificationEnabled = grantedNotificationPermission ?? false;
       notificationEnabled = grantedScheduleNotificationPermission ?? false;
     }
   }
 
   static Future<void> start() async {
+    await _initializeTimeZones();
+    await _initializeNotifications();
+  }
+
+  static Future<void> _initializeTimeZones() async {
     final currentTimeZone = await FlutterTimezone.getLocalTimezone();
     tzl.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation(currentTimeZone));
+  }
 
-    /// [Adroid] va [IOS] uchun sozlamalarni to'g'irlaymiz
+  static Future<void> _initializeNotifications() async {
     const androidInit = AndroidInitializationSettings("@mipmap/ic_launcher");
     final iosInit = DarwinInitializationSettings(
       notificationCategories: [
@@ -92,19 +92,18 @@ class LocalNotificationsServices {
       iOS: iosInit,
     );
 
-    await _localnotification.initialize(
+    await _localNotification.initialize(
       notificationInit,
       onDidReceiveNotificationResponse:
           (NotificationResponse notificationResponse) async {
         print(notificationResponse.payload);
       },
-      // onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
   }
 
   static Future<void> scheduleNotification(
       int id, String title, String body, DateTime scheduledDate) async {
-    await _localnotification.zonedSchedule(
+    await _localNotification.zonedSchedule(
       id,
       title,
       body,
