@@ -14,6 +14,18 @@ class TadbirServiceFirebase {
     yield* firebaseservice.where("creatorId", isEqualTo: userId).snapshots();
   }
 
+  Stream<QuerySnapshot> fetchRecentEvents() async* {
+    final Timestamp now = Timestamp.now();
+    final Timestamp nextWeek = Timestamp.fromDate(DateTime.now().add(
+      const Duration(days: 7),
+    ));
+
+    yield* firebaseservice
+        .where('startTime', isGreaterThanOrEqualTo: now)
+        .where('startTime', isLessThanOrEqualTo: nextWeek)
+        .snapshots();
+  }
+
   Future<void> addEvent(Event event) async {
     await firebaseservice.add({
       "locationName": event.locationName,

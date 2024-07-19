@@ -12,4 +12,16 @@ extension Format on Timestamp {
       'HH:mm dd MMMM, yyyy',
     ).format(toDate());
   }
+
+  String toMonth() {
+    return DateFormat(
+      'MMMM',
+    ).format(toDate());
+  }
+
+  String toDay() {
+    return DateFormat(
+      'dd',
+    ).format(toDate());
+  }
 }

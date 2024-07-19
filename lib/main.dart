@@ -7,6 +7,7 @@ import 'package:tadbiro_app/bloc/theme_bloc/theme_cubit.dart';
 import 'package:tadbiro_app/controllers/tadbir_controller.dart';
 import 'package:tadbiro_app/firebase_options.dart';
 import 'package:tadbiro_app/services/firebase_push_notification_service.dart';
+import 'package:tadbiro_app/services/local_notification_service.dart';
 import 'package:tadbiro_app/services/location_service.dart';
 import 'package:tadbiro_app/services/tadbir_service_firebase.dart';
 import 'package:tadbiro_app/ui/screens/authentication/sign_in_screen.dart';
@@ -21,6 +22,8 @@ void main(List<String> args) async {
     );
     await FirebasePushNotificationService.init();
     await LocationService.checkPermissions();
+    await LocationService.checkCameraPermission();
+    await LocalNotificationsServices.requestPermission();
   } catch (e) {
     print('Firebase initialization error: $e');
   }

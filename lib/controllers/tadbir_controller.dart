@@ -18,6 +18,9 @@ class TadbirController extends ChangeNotifier {
   Stream<QuerySnapshot> fetchMyEvents() async* {
     yield* tadbirServiceFirebase.fetchMyEvents();
   }
+    Stream<QuerySnapshot> fetchRecentEvents() async* {
+    yield* tadbirServiceFirebase.fetchRecentEvents();
+  }
 
   void addEvent(Event event) async {
     await tadbirServiceFirebase.addEvent(event);

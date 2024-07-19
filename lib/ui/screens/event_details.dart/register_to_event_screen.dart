@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:tadbiro_app/controllers/tadbir_controller.dart';
 import 'package:tadbiro_app/data/models/event.dart';
+import 'package:tadbiro_app/services/local_notification_service.dart';
 import 'package:tadbiro_app/ui/screens/homepage.dart';
 
 class RegisterToEventScreen extends StatefulWidget {
@@ -21,6 +22,41 @@ class RegisterToEventScreen extends StatefulWidget {
 class _RegisterToEventScreenState extends State<RegisterToEventScreen> {
   int seatCount = 0;
   String paymentMethod = 'Click';
+
+  void eslatmabelgilash(String name) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 1)),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate != null) {
+      TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (pickedTime != null) {
+        Navigator.pop(context);
+
+        DateTime selectedDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        await LocalNotificationsServices.scheduleNotification(
+            1, "Notificaation", name, selectedDateTime);
+        Navigator.of(context).pushReplacement(
+          CupertinoPageRoute(
+            builder: (context) => Homepage(),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +177,10 @@ class _RegisterToEventScreenState extends State<RegisterToEventScreen> {
                         ),
                         FloatingActionButton(
                           backgroundColor: Colors.yellow.shade700,
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            eslatmabelgilash(widget.event.name);
+                          },
                           child: const Text("Eslatma belgilash"),
                         ),
                         const Gap(15),

@@ -63,66 +63,101 @@ class Homepage extends StatelessWidget {
                 height: 2,
               ),
             ),
-            CarouselSlider.builder(
-                itemCount: 3,
-                itemBuilder: (context, index, realIndex) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 12),
-                    padding: const EdgeInsets.all(10),
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      image: const DecorationImage(
-                        fit: BoxFit.fill,
-                        image: AssetImage('assets/images/back.png'),
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
+            StreamBuilder(
+              stream: context.read<TadbirController>().fetchRecentEvents(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text("Xatolik yuz berdi: ${snapshot.error}"),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text("Tadbirlar yo'q"),
+                  );
+                }
+
+                List<Event> events = snapshot.data!.docs.map((doc) {
+                  return Event.fromQuerySnapshot(doc);
+                }).toList();
+
+                return CarouselSlider.builder(
+                  itemCount: events.length,
+                  itemBuilder: (context, index, realIndex) {
+                    final event = events[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (context) =>
+                                EventDetailsScreen(event: event),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.all(10),
+                        height: 200,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          image: DecorationImage(
+                            fit: BoxFit.fill,
+                            image: NetworkImage(event.imageUrl),
+                          ),
+                        ),
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: const EdgeInsets.all(5),
-                              child: const Column(
-                                children: [
-                                  Text(
-                                    "12",
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade600,
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                  Text(
-                                    'May',
+                                  padding: const EdgeInsets.all(5),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        event.startTime.toDay(),
+                                      ),
+                                      Text(
+                                        event.startTime.toMonth(),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    CupertinoIcons.heart_circle,
+                                    size: 35,
+                                  ),
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(
-                                CupertinoIcons.heart_circle,
-                                size: 35,
+                            Text(
+                              event.name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
-                        const Text(
-                          'Cillum dolore nostrud ullamco irure do nostrud magna culpa consectetur.',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                options: CarouselOptions(viewportFraction: 0.9)),
+                      ),
+                    );
+                  },
+                  options:
+                      CarouselOptions(viewportFraction: 0.9, autoPlay: true),
+                );
+              },
+            ),
             const Gap(10),
             const Text(
               "Barcha tadbirlar",
